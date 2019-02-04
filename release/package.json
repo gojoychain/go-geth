@@ -2,7 +2,7 @@
   "name": "release",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "release.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
-    "form-data": "^2.3.3"
+    "form-data": "^2.3.3",
+    "targz": "^1.0.1"
   }
 }
