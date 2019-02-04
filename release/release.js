@@ -70,7 +70,9 @@ async function uploadFile(filename) {
   }
 
   const resolvedPath = path.resolve(`../build/bin/${filename}`)
+  console.log(resolvedPath)
   if (doesFileExist(resolvedPath)) {
+    console.log('uploading', filename)
     await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
       header: { 'Content-Type': 'multipart/form-data' },
       data: new FormData().append(filename, fs.createReadStream(resolvedPath))
@@ -90,6 +92,7 @@ async function uploadIos() {
 
   const resolvedPath = path.resolve(`../build/bin/Geth.framework`)
   if (doesFileExist(resolvedPath)) {
+    console.log('compressing')
     await targz.compress({
       src: resolvedPath,
       dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
