@@ -37,7 +37,7 @@ async function uploadGenesis() {
   if (!id) {
     throw Error('id not defined')
   }
-  if (!config.options || !config.options.mainnet) {
+  if (!config.hasOwnProperty('options') || !config.options.hasOwnProperty('mainnet')) {
     throw Error('options.mainnet not found in release.json')
   }
 
