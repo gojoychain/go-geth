@@ -56,15 +56,22 @@ async function uploadGenesis() {
   })
 }
 
+async function doesFileExist(path) {
+  if (!fs.existsSync(path)) {
+    console.log(`Skipped upload: ${path}`)
+    return false
+  }
+  return true
+}
+
 async function uploadFile(filename) {
   if (!id) {
     throw Error('id not defined')
   }
 
   const resolvedPath = path.resolve(`../build/bin/${filename}`)
-  // Skip file if not found
-  if (!fs.existsSync(resolvedPath)) {
-    console.log(`Skipped ${filename} upload`)
+  if (!doesFileExist(resolvedPath)) {
+    return
   }
 
   await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
@@ -75,6 +82,29 @@ async function uploadFile(filename) {
     console.log(`Upload: ${name} (${state})`)
   }).catch((err) => {
     throw err
+  })
+}
+
+async function uploadIos() {
+  if (!id) {
+    throw Error('id not defined')
+  }
+
+  const resolvedPath = path.resolve(`../build/bin/Geth.framework`)
+  if (!doesFileExist(resolvedPath)) {
+    return
+  }
+
+  await targz.compress({
+    src: path.resolve(`../build/bin/Geth.framework`),
+    dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
+  }, async (err) => {
+    if (err) {
+      throw err
+    }
+
+    console.log('Compressed Geth.framework')
+    await uploadFile('geth.framework.tar.gz')
   })
 }
 
@@ -90,18 +120,7 @@ async function deploy() {
     await uploadFile('bootnode')
     await uploadFile('geth')
     await uploadFile('geth.aar')
-
-    await targz.compress({
-      src: path.resolve(`../build/bin/Geth.framework`),
-      dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
-    }, async (err) => {
-      if (err) {
-        throw err
-      }
-
-      console.log('Compressed Geth.framework')
-      await uploadFile('geth.framework.tar.gz')
-    })
+    await uploadIos()
   } catch (err) {
     console.error(err)
   }
