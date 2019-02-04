@@ -30,7 +30,7 @@ function setupAxios(baseURL) {
 }
 
 async function createRelease() {
-  await instance.post('repos/nakachain/go-naka/releases', config.release)
+  await instance.post('repos/ghuchain/go-ghuchain/releases', config.release)
   .then((res) => {
     id = res.data.id
     console.log(`Release created: ${config.release.name}`)
@@ -44,7 +44,7 @@ async function uploadFile(filename) {
     throw Error('id not defined')
   }
 
-  await instance.post(`repos/nakachain/go-naka/releases/${id}/assets?name=${filename}`, {
+  await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
     header: { 'Content-Type': 'multipart/form-data' },
     data: new FormData().append(filename, fs.createReadStream(path.join('..', `/build/bin/${filename}`)))
   }).then((res) => {
