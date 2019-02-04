@@ -4,12 +4,6 @@ const fs = require('fs')
 const path = require('path')
 const targz = require('targz')
 
-/**
- * Release Instructions
- * 1. Edit the values in `release.json`
- * 2. `node release.js`
- */
-
 let config
 let instance
 let id
@@ -39,6 +33,29 @@ async function createRelease() {
   })
 }
 
+async function uploadGenesis() {
+  if (!id) {
+    throw Error('id not defined')
+  }
+  if (!config.options || !config.options.mainnet) {
+    throw Error('options.mainnet not found in release.json')
+  }
+
+  const filename = Boolean(config.options.mainnet)
+    ? 'genesis-mainnet.json'
+    : 'genesis-testnet.json'
+
+  await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
+    header: { 'Content-Type': 'multipart/form-data' },
+    data: new FormData().append(filename, fs.createReadStream(path.resolve(`../ghuchain/${filename}`)))
+  }).then((res) => {
+    const { name, state } = res.data
+    console.log(`Upload: ${name} (${state})`)
+  }).catch((err) => {
+    throw err
+  })
+}
+
 async function uploadFile(filename) {
   if (!id) {
     throw Error('id not defined')
@@ -46,7 +63,7 @@ async function uploadFile(filename) {
 
   await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
     header: { 'Content-Type': 'multipart/form-data' },
-    data: new FormData().append(filename, fs.createReadStream(path.join('..', `/build/bin/${filename}`)))
+    data: new FormData().append(filename, fs.createReadStream(path.resolve(`../build/bin/${filename}`)))
   }).then((res) => {
     const { name, state } = res.data
     console.log(`Upload: ${name} (${state})`)
@@ -63,13 +80,14 @@ async function deploy() {
     await createRelease()
 
     setupAxios('https://uploads.github.com/')
+    await uploadGenesis()
     await uploadFile('bootnode')
     await uploadFile('geth')
     await uploadFile('geth.aar')
 
     await targz.compress({
-      src: path.join('..', `/build/bin/Geth.framework`),
-      dest: path.join('..', `/build/bin/geth.framework.tar.gz`),
+      src: path.resolve(`../build/bin/Geth.framework`),
+      dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
     }, async (err) => {
       if (err) {
         throw err
