@@ -70,19 +70,17 @@ async function uploadFile(filename) {
   }
 
   const resolvedPath = path.resolve(`../build/bin/${filename}`)
-  if (!doesFileExist(resolvedPath)) {
-    return
+  if (doesFileExist(resolvedPath)) {
+    await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
+      header: { 'Content-Type': 'multipart/form-data' },
+      data: new FormData().append(filename, fs.createReadStream(resolvedPath))
+    }).then((res) => {
+      const { name, state } = res.data
+      console.log(`Upload: ${name} (${state})`)
+    }).catch((err) => {
+      throw err
+    })
   }
-
-  await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
-    header: { 'Content-Type': 'multipart/form-data' },
-    data: new FormData().append(filename, fs.createReadStream(path.resolve(resolvedPath)))
-  }).then((res) => {
-    const { name, state } = res.data
-    console.log(`Upload: ${name} (${state})`)
-  }).catch((err) => {
-    throw err
-  })
 }
 
 async function uploadIos() {
@@ -91,21 +89,19 @@ async function uploadIos() {
   }
 
   const resolvedPath = path.resolve(`../build/bin/Geth.framework`)
-  if (!doesFileExist(resolvedPath)) {
-    return
+  if (doesFileExist(resolvedPath)) {
+    await targz.compress({
+      src: resolvedPath,
+      dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
+    }, async (err) => {
+      if (err) {
+        throw err
+      }
+  
+      console.log('Compressed Geth.framework')
+      await uploadFile('geth.framework.tar.gz')
+    })
   }
-
-  await targz.compress({
-    src: path.resolve(`../build/bin/Geth.framework`),
-    dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
-  }, async (err) => {
-    if (err) {
-      throw err
-    }
-
-    console.log('Compressed Geth.framework')
-    await uploadFile('geth.framework.tar.gz')
-  })
 }
 
 async function deploy() {
