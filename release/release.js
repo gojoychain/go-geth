@@ -47,7 +47,7 @@ async function uploadGenesis() {
 
   await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
     header: { 'Content-Type': 'multipart/form-data' },
-    data: new FormData().append(filename, fs.createReadStream(path.resolve(`../ghuchain/${filename}`)))
+    data: new FormData().append(filename, fs.createReadStream(path.join('../ghuchain/', filename)))
   }).then((res) => {
     const { name, state } = res.data
     console.log(`Upload: ${name} (${state})`)
@@ -56,7 +56,7 @@ async function uploadGenesis() {
   })
 }
 
-async function doesFileExist(path) {
+function doesFileExist(path) {
   if (!fs.existsSync(path)) {
     console.log(`Skipped upload: ${path}`)
     return false
@@ -69,10 +69,8 @@ async function uploadFile(filename) {
     throw Error('id not defined')
   }
 
-  const resolvedPath = path.resolve(`../build/bin/${filename}`)
-  console.log(resolvedPath)
+  const resolvedPath = path.join('../build/bin/', filename)
   if (doesFileExist(resolvedPath)) {
-    console.log('uploading', filename)
     await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
       header: { 'Content-Type': 'multipart/form-data' },
       data: new FormData().append(filename, fs.createReadStream(resolvedPath))
@@ -90,12 +88,11 @@ async function uploadIos() {
     throw Error('id not defined')
   }
 
-  const resolvedPath = path.resolve(`../build/bin/Geth.framework`)
+  const resolvedPath = path.join('../build/bin/Geth.framework')
   if (doesFileExist(resolvedPath)) {
-    console.log('compressing')
     await targz.compress({
       src: resolvedPath,
-      dest: path.resolve(`../build/bin/geth.framework.tar.gz`),
+      dest: path.join('../build/bin/geth.framework.tar.gz'),
     }, async (err) => {
       if (err) {
         throw err
