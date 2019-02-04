@@ -61,9 +61,15 @@ async function uploadFile(filename) {
     throw Error('id not defined')
   }
 
+  const resolvedPath = path.resolve(`../build/bin/${filename}`)
+  // Skip file if not found
+  if (!fs.existsSync(resolvedPath)) {
+    console.log(`Skipped ${filename} upload`)
+  }
+
   await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
     header: { 'Content-Type': 'multipart/form-data' },
-    data: new FormData().append(filename, fs.createReadStream(path.resolve(`../build/bin/${filename}`)))
+    data: new FormData().append(filename, fs.createReadStream(path.resolve(resolvedPath)))
   }).then((res) => {
     const { name, state } = res.data
     console.log(`Upload: ${name} (${state})`)
