@@ -8,13 +8,13 @@ ADD . /go-ghuchain
 ARG GIT_BRANCH=master
 RUN cd /go-ghuchain \
     && echo "Branch: ${GIT_BRANCH}" \
-    && make geth git-branch=${GIT_BRANCH}
+    && make all git-branch=${GIT_BRANCH}
 
 # Pull Geth into a second stage deploy alpine container
 FROM alpine:latest
 
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /go-ghuchain/build/bin/geth /usr/local/bin/
+COPY --from=builder /go-ghuchain/build/bin/bootnode /usr/local/bin/
 
-EXPOSE 8545 8546 30303 30303/udp
-ENTRYPOINT ["geth"]
+EXPOSE 30301 30301/udp
+ENTRYPOINT ["bootnode"]
