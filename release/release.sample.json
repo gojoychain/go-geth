@@ -1,0 +1,13 @@
+{
+    "credentials": {
+        "github_token": "my_github_token"
+    },
+    "release": {
+        "target_commitish": "master",
+        "tag_name": "v1.0.0",
+        "name": "1.0.0",
+        "body": "Release notes go here.",
+        "draft": false,
+        "prerelease": false
+    }
+}
