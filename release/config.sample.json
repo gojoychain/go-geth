@@ -1,6 +1,8 @@
 {
-    "credentials": {
-        "github_token": "my_github_token"
+    "github": {
+        "owner": "my_github_organization",
+        "repo": "my_github_repo",
+        "api_token": "my_github_token"
     },
     "release": {
         "target_commitish": "master",
@@ -9,5 +11,8 @@
         "body": "Release notes go here.",
         "draft": false,
         "prerelease": false
+    },
+    "options": {
+        "mainnet": false
     }
 }
