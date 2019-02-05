@@ -47,7 +47,7 @@ profile.cov
 **/yarn-error.log
 
 # Releases
-release.json
+config.json
 
 
 # Created by https://www.gitignore.io/api/node,linux,macos,windows,visualstudiocode
