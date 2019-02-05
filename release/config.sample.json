@@ -11,8 +11,5 @@
         "body": "Release notes go here.",
         "draft": false,
         "prerelease": false
-    },
-    "options": {
-        "mainnet": false
     }
 }
