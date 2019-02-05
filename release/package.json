@@ -9,8 +9,7 @@
   "author": "Deric Walintukan <deric@ghuchain.com>",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "form-data": "^2.3.3",
+    "axios": "0.18.0",
     "targz": "^1.0.1"
   }
 }

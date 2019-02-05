@@ -1,56 +1,47 @@
-const axios = require('axios')
-const FormData = require('form-data')
 const fs = require('fs')
 const path = require('path')
+const { exec } = require('child_process')
+const axios = require('axios')
 const targz = require('targz')
 
-let config
-let instance
-let id
+let id, github, release, options
 
 function parseConfig() {
-  config = JSON.parse(fs.readFileSync('release.json', 'utf8'));
-}
+  const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+  github = config.github
+  release = config.release
+  options = config.options
 
-function setupAxios(baseURL) {
-  instance = axios.create({
-    baseURL,
-    headers: {
-      'Authorization': `token ${config.credentials.github_token}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'node.js',
-    },
-  })
+  if (!github.hasOwnProperty('owner')) {
+    throw Error('github.owner not defined')
+  }
+  if (!github.hasOwnProperty('repo')) {
+    throw Error('github.repo not defined')
+  }
+  if (!github.hasOwnProperty('api_token')) {
+    throw Error('github.api_token not defined')
+  }
+  if (!release.hasOwnProperty('tag_name')) {
+    throw Error('release.tag_name not defined')
+  }
+  if (!options.hasOwnProperty('mainnet')) {
+    throw Error('options.mainnet not defined')
+  }
 }
 
 async function createRelease() {
-  await instance.post('repos/ghuchain/go-ghuchain/releases', config.release)
-  .then((res) => {
-    id = res.data.id
-    console.log(`Release created: ${config.release.name}`)
-  }).catch((err) => {
-    throw err
-  })
-}
-
-async function uploadGenesis() {
-  if (!id) {
-    throw Error('id not defined')
-  }
-  if (!config.hasOwnProperty('options') || !config.options.hasOwnProperty('mainnet')) {
-    throw Error('options.mainnet not found in release.json')
-  }
-
-  const filename = Boolean(config.options.mainnet)
-    ? 'genesis-mainnet.json'
-    : 'genesis-testnet.json'
-
-  await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
-    header: { 'Content-Type': 'multipart/form-data' },
-    data: new FormData().append(filename, fs.createReadStream(path.join('..', `/ghuchain/${filename}`)))
+  await axios.post('https://api.github.com/repos/ghuchain/go-ghuchain/releases', release, {
+    headers: {
+      'Authorization': `token ${github.api_token}`,
+      'User-Agent': 'node.js',
+      'Accept': 'application/json',
+    }
   }).then((res) => {
-    const { name, state } = res.data
-    console.log(`Upload: ${name} (${state})`)
+    id = res.data.id
+    if (!id) {
+      throw Error('release id not valid')
+    }
+    console.log(`Release created: ${release.name}`)
   }).catch((err) => {
     throw err
   })
@@ -64,42 +55,45 @@ function doesFileExist(path) {
   return true
 }
 
-async function uploadFile(filename) {
-  if (!id) {
-    throw Error('id not defined')
+async function uploadFile(filepath) {
+  if (doesFileExist(filepath)) {
+    console.log(`Uploading: ${path.basename(filepath)}`)
+    exec(
+      `sh upload-gh-release-asset.sh api_token=${github.api_token} owner=${github.owner} repo=${github.repo} id=${id} filename=${filepath}`, 
+      (err, stdout, stderr) => {
+        if (err) {
+          console.error(`error: ${err}`)
+          return
+        }
+        
+        console.log(stderr)
+        console.log(stdout)
+      }
+    )
   }
+}
 
-  const resolvedPath = path.join('..', `/build/bin/${filename}`)
-  if (doesFileExist(resolvedPath)) {
-    await instance.post(`repos/ghuchain/go-ghuchain/releases/${id}/assets?name=${filename}`, {
-      header: { 'Content-Type': 'multipart/form-data' },
-      data: new FormData().append(filename, fs.createReadStream(resolvedPath))
-    }).then((res) => {
-      const { name, state } = res.data
-      console.log(`Upload: ${name} (${state})`)
-    }).catch((err) => {
-      throw err
-    })
+async function uploadGenesis() {
+  const filename = Boolean(options.mainnet)
+    ? 'genesis-mainnet.json'
+    : 'genesis-testnet.json'
+  const filepath = `../ghuchain/${filename}`
+  if (doesFileExist(filepath)) {
+    await uploadFile(filepath)
   }
 }
 
 async function uploadIos() {
-  if (!id) {
-    throw Error('id not defined')
-  }
-
-  const resolvedPath = path.join('..', '/build/bin/Geth.framework')
-  if (doesFileExist(resolvedPath)) {
-    await targz.compress({
-      src: resolvedPath,
-      dest: path.join('../build/bin/geth.framework.tar.gz'),
-    }, async (err) => {
+  const srcFile = path.join('../build/bin/Geth.framework')
+  const destFile = path.join('../build/bin/geth.framework.tar.gz')
+  if (doesFileExist(srcFile)) {
+    await targz.compress({ src: srcFile, dest: destFile }, async (err) => {
       if (err) {
         throw err
       }
   
       console.log('Compressed Geth.framework')
-      await uploadFile('geth.framework.tar.gz')
+      await uploadFile(destFile)
     })
   }
 }
@@ -107,15 +101,11 @@ async function uploadIos() {
 async function deploy() {
   try {
     parseConfig()
-
-    setupAxios('https://api.github.com/')
     await createRelease()
-
-    setupAxios('https://uploads.github.com/')
     await uploadGenesis()
-    await uploadFile('bootnode')
-    await uploadFile('geth')
-    await uploadFile('geth.aar')
+    await uploadFile('../build/bin/bootnode')
+    await uploadFile('../build/bin/geth')
+    await uploadFile('../build/bin/geth.aar')
     await uploadIos()
   } catch (err) {
     console.error(err)
