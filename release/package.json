@@ -2,10 +2,14 @@
   "name": "release",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "release.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Deric Walintukan <deric@ghuchain.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "axios": "0.18.0",
+    "targz": "^1.0.1"
+  }
 }
