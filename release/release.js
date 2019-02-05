@@ -4,13 +4,12 @@ const { exec } = require('child_process')
 const axios = require('axios')
 const targz = require('targz')
 
-let id, github, release, options
+let id, github, release
 
 function parseConfig() {
   const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
   github = config.github
   release = config.release
-  options = config.options
 
   if (!github.hasOwnProperty('owner')) {
     throw Error('github.owner not defined')
@@ -23,9 +22,6 @@ function parseConfig() {
   }
   if (!release.hasOwnProperty('tag_name')) {
     throw Error('release.tag_name not defined')
-  }
-  if (!options.hasOwnProperty('mainnet')) {
-    throw Error('options.mainnet not defined')
   }
 }
 
@@ -73,16 +69,6 @@ async function uploadFile(filepath) {
   }
 }
 
-async function uploadGenesis() {
-  const filename = Boolean(options.mainnet)
-    ? 'genesis-mainnet.json'
-    : 'genesis-testnet.json'
-  const filepath = `../ghuchain/${filename}`
-  if (doesFileExist(filepath)) {
-    await uploadFile(filepath)
-  }
-}
-
 async function uploadIos() {
   const srcFile = path.join('../build/bin/Geth.framework')
   const destFile = path.join('../build/bin/geth.framework.tar.gz')
@@ -102,7 +88,8 @@ async function deploy() {
   try {
     parseConfig()
     await createRelease()
-    await uploadGenesis()
+    await uploadFile('../ghuchain/genesis-mainnet.json')
+    await uploadFile('../ghuchain/genesis-testnet.json')
     await uploadFile('../build/bin/bootnode')
     await uploadFile('../build/bin/geth')
     await uploadFile('../build/bin/geth.aar')
