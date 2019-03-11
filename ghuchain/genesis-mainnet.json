@@ -1,6 +1,6 @@
 {
   "config": {
-    "chainId": 8888,
+    "chainId": 18,
     "homesteadBlock": 1,
     "eip150Block": 2,
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -8,14 +8,14 @@
     "eip158Block": 3,
     "byzantiumBlock": 4,
     "constantinopleBlock": 5,
-    "petersburgBlock": 6,
+    "petersburgBlock": 5,
     "clique": {
       "period": 3,
       "epoch": 30000
     }
   },
   "nonce": "0x0",
-  "timestamp": "0x5c6d011b",
+  "timestamp": "0x5c85eb3f",
   "extraData": "0x000000000000000000000000000000000000000000000000000000000000000087d6269633ecad49aa820e1c6c138fedaf5c2bee8c1252543b8023b3cde46858c9434d47e235982c94116c27cf20a3c66b0d28dc00dbb19d46e19264a6db0ba5408f8f44d3c5c2a01afb051764d99a55cfa737d7ee740a6fb8c0f7c1cfbb170af454caf70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
   "gasLimit": "0x47b760",
   "difficulty": "0x1",
