@@ -26,7 +26,7 @@ function parseConfig() {
 }
 
 async function createRelease() {
-  await axios.post('https://api.github.com/repos/ghuchain/go-ghuchain/releases', release, {
+  await axios.post(`https://api.github.com/repos/${github.owner}/${github.repo}/releases`, release, {
     headers: {
       'Authorization': `token ${github.api_token}`,
       'User-Agent': 'node.js',
@@ -39,6 +39,7 @@ async function createRelease() {
     }
     console.log(`Release created: ${release.name}`)
   }).catch((err) => {
+    console.error(err.response.data.errors)
     throw err
   })
 }
