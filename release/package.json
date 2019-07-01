@@ -1,7 +1,8 @@
 {
   "name": "release",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
+  "private": true,
   "main": "release.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +10,7 @@
   "author": "Deric Walintukan <deric@ghuchain.com>",
   "license": "ISC",
   "dependencies": {
-    "axios": "0.18.0",
+    "axios": "^0.18.1",
     "targz": "^1.0.1"
   }
 }
