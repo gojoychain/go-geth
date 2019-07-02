@@ -151,3 +151,15 @@ geth-windows-amd64:
 	build/env.sh go run build/ci.go xgo -- --go=$(GO) --targets=windows/amd64 -v ./cmd/geth
 	@echo "Windows amd64 cross compilation done:"
 	@ls -ld $(GOBIN)/geth-windows-* | grep amd64
+
+pack-darwin-amd64:
+	build/env.sh go run build/ci.go xgo -- --go=$(GO) --targets=darwin/amd64 -v ./cmd/geth
+	build/env.sh go run build/ci.go xgo -- --go=$(GO) --targets=darwin/amd64 -v ./cmd/bootnode
+	cd build/bin && tar -cvzf all-darwin-amd64-$(VERSION).tar.gz geth-darwin-*-amd64 bootnode-darwin-*-amd64 && cd -
+	@echo "Darwin amd64 cross compilation and packaging done"
+	
+pack-linux-amd64:
+	build/env.sh go run build/ci.go xgo -- --go=$(GO) --targets=linux/amd64 -v ./cmd/geth
+	build/env.sh go run build/ci.go xgo -- --go=$(GO) --targets=linux/amd64 -v ./cmd/bootnode
+	cd build/bin && tar -cvzf all-linux-amd64-$(VERSION).tar.gz geth-linux-amd64 bootnode-linux-amd64 && cd -
+	@echo "Linux amd64 cross compilation and packaging done"
