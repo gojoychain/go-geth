@@ -3,10 +3,10 @@ FROM golang:1.11-alpine as builder
 
 RUN apk add --no-cache make gcc musl-dev linux-headers
 
-ADD . /go-ghuchain
+ADD . /go-geth
 
 ARG GIT_BRANCH=master
-RUN cd /go-ghuchain \
+RUN cd /go-geth \
     && echo "Branch: ${GIT_BRANCH}" \
     && make geth git-branch=${GIT_BRANCH}
 
@@ -14,7 +14,7 @@ RUN cd /go-ghuchain \
 FROM alpine:latest
 
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /go-ghuchain/build/bin/geth /usr/local/bin/
+COPY --from=builder /go-geth/build/bin/geth /usr/local/bin/
 
 EXPOSE 8545 8546 30303 30303/udp
 ENTRYPOINT ["geth"]
